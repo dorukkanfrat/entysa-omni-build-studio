@@ -5,7 +5,7 @@ Projeyi seçersin, tipini (django / next) otomatik anlar, güncel dev branch'i /
 
 ## Çalıştırma
 
-En kolayı: **`Baslat.command`** dosyasına çift tıkla. (İlk açılışta macOS "izin" sorabilir: Sağ tık → Aç.)
+`projects/omni-launcher` klasöründeki **`Baslat.command`** dosyasına çift tıkla. (İlk açılışta macOS "izin" sorabilir: Sağ tık → Aç.)
 
 Terminalden:
 
@@ -15,7 +15,9 @@ npm install      # ilk sefer
 npm start
 ```
 
-> Not: `Baslat.command` / terminal üzerinden açıldığında uygulama senin shell ortamını (nvm + pyenv) miras alır, böylece `python` / `yarn` / `git` doğru sürümlerle bulunur.
+> `Baslat.command` açılırken homebrew + pyenv + nvm (Node 22) ortamını yükler; böylece `git` / `python` / `node` / `yarn` doğru sürümlerle bulunur ve build sorunsuz çalışır.
+>
+> **Not:** `.dmg`/`.app` olarak paketleme önerilmez — Finder'dan açılan `.app` terminal ortamını (PATH) miras almadığı için build adımı `python`/`yarn`'ı bulamaz. Bu araç klasörden `Baslat.command` ile çalıştırılmak üzere tasarlandı.
 
 ## Ne yapar
 
@@ -39,18 +41,6 @@ npm start
 
 Ayarlar `~/Library/Application Support/omni-launcher/config.json` içinde tutulur.
 
-## Paketleme (sonraki adım)
+## Neden paketlenmiş app değil?
 
-Mac `.dmg`:
-
-```bash
-npm run dist:mac
-```
-
-Windows `.exe` (Windows makinede veya CI'da):
-
-```bash
-npm run dist:win
-```
-
-> `.app` Finder'dan çift tıkla açıldığında shell ortamını miras almaz; o senaryoda Ayarlar'daki "Shell ön komutu" alanına PATH/venv satırını ekle.
+`.dmg`/`.app` paketi denendi ama Finder'dan açılan `.app` terminal ortamını (homebrew/pyenv/nvm PATH) miras almadığı için build adımı `python`/`yarn`'ı bulamıyor. Bu yüzden araç klasörden `Baslat.command` ile çalışır — `package.json`'daki `dist:mac` script'i dursun ama günlük kullanım için gerekli değil.
