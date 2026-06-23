@@ -21,6 +21,16 @@ function shellInvocation() {
   return { cmd: sh, pre: ['-l', '-c'] }
 }
 
+const BOOT_BREW = '[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"; [ -x /usr/local/bin/brew ] && eval "$(/usr/local/bin/brew shellenv)"'
+const BOOT_PYENV_NVM = 'export PYENV_ROOT="$HOME/.pyenv"; [ -d "$PYENV_ROOT/bin" ] && export PATH="$PYENV_ROOT/bin:$PATH"; command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)" >/dev/null 2>&1; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" >/dev/null 2>&1; nvm use 22 >/dev/null 2>&1 || nvm use 20 >/dev/null 2>&1'
+
+function withEnv(command, full) {
+  if (process.platform === 'win32') return command
+  let boot = BOOT_BREW
+  if (full) boot += '; ' + BOOT_PYENV_NVM
+  return boot + '; ' + command
+}
+
 function quoteArg(value) {
   const v = String(value)
   if (process.platform === 'win32') {
@@ -34,7 +44,7 @@ function runShell(command, cwd, timeoutMs) {
     const { cmd, pre } = shellInvocation()
     let child
     try {
-      child = spawn(cmd, pre.concat([command]), { cwd })
+      child = spawn(cmd, pre.concat([withEnv(command, false)]), { cwd })
     } catch (e) {
       resolve({ code: -1, stdout: '', stderr: String(e) })
       return
@@ -307,6 +317,7 @@ function buildCommand(params, cfg) {
 module.exports = {
   defaultConfig,
   shellInvocation,
+  withEnv,
   quoteArg,
   runShell,
   classifyProject,

@@ -169,12 +169,12 @@ ipcMain.handle('build:run', (e, params) => {
     safeSend(e.sender, 'build:end', { code: -1 })
     return { started: false }
   }
-  return streamCommand(e.sender, built.command, built.cwd)
+  return streamCommand(e.sender, lib.withEnv(built.command, true), built.cwd)
 })
 
 ipcMain.handle('git:push-branch', (e, projectPath, branch) => {
   const command = 'git push -u origin ' + lib.quoteArg(branch)
-  return streamCommand(e.sender, command, projectPath)
+  return streamCommand(e.sender, lib.withEnv(command, false), projectPath)
 })
 
 ipcMain.handle('git:tag-push', (e, projectPath, tag, remotes) => {
@@ -182,7 +182,7 @@ ipcMain.handle('git:tag-push', (e, projectPath, tag, remotes) => {
   const safeRemotes = (remotes || []).filter((r) => /^[A-Za-z0-9_-]+$/.test(r))
   const parts = ['git tag ' + qt]
   for (const r of safeRemotes) parts.push('git push ' + r + ' ' + qt)
-  return streamCommand(e.sender, parts.join(' && '), projectPath)
+  return streamCommand(e.sender, lib.withEnv(parts.join(' && '), false), projectPath)
 })
 
 ipcMain.handle('build:stop', () => {
