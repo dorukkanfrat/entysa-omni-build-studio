@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Omni Launcher</title>
+</head>
+<body>
+  <div id="titlebar"><span class="brand">Omni Launcher</span></div>
+
+  <div id="layout">
+    <aside id="sidebar">
+      <div class="sidebar-head">
+        <input id="projectSearch" type="text" placeholder="Proje ara..." />
+        <button id="settingsBtn" class="icon-btn" title="Ayarlar">⚙</button>
+      </div>
+      <div id="projectList" class="project-list"></div>
+      <div class="sidebar-foot">
+        <button id="refreshProjects" class="ghost-btn">↻ Projeleri yenile</button>
+      </div>
+    </aside>
+
+    <main id="content">
+      <div id="emptyState" class="empty">
+        <div class="empty-inner">
+          <div class="empty-logo">◢◣</div>
+          <h2>Bir proje seç</h2>
+          <p>Soldaki listeden bir proje seçince güncel dev branch, normal branch'ler ve tag'ler burada gelir.</p>
+        </div>
+      </div>
+
+      <div id="projectView" class="hidden">
+        <header class="proj-header">
+          <div class="proj-title">
+            <h1 id="projName">—</h1>
+            <span id="projType" class="badge"></span>
+            <span id="projCurrent" class="current-branch"></span>
+          </div>
+          <div class="proj-actions">
+            <button id="fetchBtn" class="secondary-btn" title="git fetch origin + ff-only pull (mevcut branch geride kalmasın)">⤓ Güncelle (fetch + pull)</button>
+            <span id="fetchStatus" class="muted"></span>
+          </div>
+        </header>
+
+        <div class="checkout-bar">
+          <span class="cb-label">Çalışılan branch:</span>
+          <button id="toMasterBtn" class="mini-btn accent-btn hidden"></button>
+          <select id="checkoutSelect"></select>
+          <button id="checkoutBtn" class="mini-btn">Bu branch'e geç</button>
+          <span id="checkoutStatus" class="muted"></span>
+        </div>
+
+        <div class="grid">
+          <section class="card">
+            <h3>Dev Branch <span class="hint">(-dev)</span></h3>
+            <div class="row">
+              <input id="devInput" type="text" placeholder="proje_dev_N" />
+              <label class="check"><input id="uedCheck" type="checkbox" /> Var olan dev'i kullan (-ued)</label>
+            </div>
+            <div class="row">
+              <select id="existingDevSelect">
+                <option value="">— mevcut dev seç —</option>
+              </select>
+              <button id="suggestDevBtn" class="mini-btn">Yeni öner</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h3>Master & Submodule</h3>
+            <div class="row">
+              <label class="field">
+                <span>Master (-pm)</span>
+                <select id="pmSelect"></select>
+              </label>
+              <label class="field" id="smField">
+                <span>Submodule (-sm)</span>
+                <select id="smSelect"></select>
+              </label>
+            </div>
+            <div class="row flags">
+              <label class="check"><input id="npmCheck" type="checkbox" /> npm ile build (-npm)</label>
+              <label class="check" id="strictField"><input id="strictCheck" type="checkbox" /> strict mode (-strict)</label>
+            </div>
+          </section>
+
+          <section class="card wide">
+            <h3>Merge edilecek branch'ler <span class="hint">(-b)</span></h3>
+            <div id="selectedBranches" class="chips"></div>
+            <div class="row">
+              <input id="branchSearch" type="text" placeholder="branch ara veya elle ekle (Enter)..." />
+            </div>
+            <div id="branchOptions" class="option-list"></div>
+          </section>
+
+          <section class="card">
+            <h3>Locale / Diller <span class="hint">(compilemessages -l)</span></h3>
+            <div id="localeDetected" class="muted" style="margin-bottom:8px;"></div>
+            <div id="localeChips" class="chips locale-chips"></div>
+            <div class="row">
+              <input id="localeInput" type="text" placeholder="ek dil kodu (Enter)..." />
+            </div>
+          </section>
+
+          <section class="card">
+            <h3>Güncel Tag'ler</h3>
+            <div id="tagList" class="tag-list"></div>
+          </section>
+        </div>
+
+        <section class="card preview-card">
+          <div class="preview-head">
+            <h3>Komut önizleme</h3>
+            <div>
+              <button id="copyCmdBtn" class="mini-btn">Kopyala</button>
+              <button id="runBtn" class="run-btn">▶ Çalıştır</button>
+            </div>
+          </div>
+          <pre id="cmdPreview" class="cmd"></pre>
+        </section>
+
+        <section class="card publish-card">
+          <h3>Sürümü Yayınla <span class="hint">(build sonrası push & tag)</span></h3>
+          <div class="publish-row">
+            <div class="publish-cell">
+              <span class="muted">Dev branch (origin'e push):</span>
+              <code id="pubDevName">—</code>
+            </div>
+            <button id="pushDevBtn" class="mini-btn">⤴ Dev branch'i origin'e push</button>
+          </div>
+          <div class="publish-row">
+            <div class="publish-cell">
+              <span class="muted">Tag adı:</span>
+              <input id="tagInput" type="text" placeholder="tag adı" />
+              <span id="tagRemotes" class="remote-checks"></span>
+            </div>
+            <button id="tagPushBtn" class="mini-btn accent-btn">🏷 Tag oluştur & push</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="consolePanel" class="console hidden">
+    <div id="consoleResize" class="console-resize" title="Yüksekliği ayarlamak için sürükle"></div>
+    <div class="console-head">
+      <span id="consoleTitle">Build çıktısı</span>
+      <div>
+        <button id="stopBtn" class="danger-btn">■ Durdur</button>
+        <button id="closeConsole" class="mini-btn">Kapat</button>
+      </div>
+    </div>
+    <pre id="consoleOut" class="console-out"></pre>
+  </div>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-box">
+      <h2>Ayarlar</h2>
+      <label class="field">
+        <span>Projeler kök dizini</span>
+        <div class="row">
+          <input id="cfgRoot" type="text" />
+          <button id="pickRoot" class="mini-btn">...</button>
+        </div>
+      </label>
+      <label class="field">
+        <span>omni_build yolu</span>
+        <div class="row">
+          <input id="cfgOmni" type="text" />
+          <button id="pickOmni" class="mini-btn">...</button>
+        </div>
+      </label>
+      <label class="field">
+        <span>python komutu</span>
+        <input id="cfgPython" type="text" />
+      </label>
+      <label class="field">
+        <span>Shell ön komutu (opsiyonel — ör. nvm/venv aktive)</span>
+        <input id="cfgPrelude" type="text" placeholder="örn: source ~/Desktop/projects/venv/bin/activate" />
+      </label>
+      <div class="modal-actions">
+        <button id="cancelSettings" class="mini-btn">İptal</button>
+        <button id="saveSettings" class="run-btn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

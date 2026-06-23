@@ -1,0 +1,37 @@
+{
+  "name": "omni-launcher",
+  "version": "1.0.0",
+  "description": "Omni Build Launcher - django_run.py / next_run.py icin masaustu onyuz",
+  "main": "main.js",
+  "author": "entysa",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "de.entysa.omnilauncher",
+    "productName": "Omni Launcher",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
+  }
+}
