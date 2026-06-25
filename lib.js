@@ -33,7 +33,7 @@ function withEnv(command, full, nodeVersion) {
   if (full) {
     const v = String(nodeVersion || '22').replace(/[^0-9.]/g, '') || '22'
     const useNode = 'nvm use ' + v + ' >/dev/null 2>&1 || nvm use 22 >/dev/null 2>&1 || nvm use 20 >/dev/null 2>&1'
-    boot += '; ' + BOOT_PYENV + '; ' + BOOT_NVM + '; ' + useNode
+    boot += '; ' + BOOT_PYENV + '; ' + BOOT_NVM + '; ' + useNode + '; echo "── Omni: Node $(node -v) ile build ──"'
   }
   return boot + '; ' + command
 }
