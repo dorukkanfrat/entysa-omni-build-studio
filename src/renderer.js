@@ -100,6 +100,7 @@ async function selectProject(p) {
   $('projCurrent').textContent = 'yukleniyor...'
   $('fetchStatus').textContent = ''
   toggleTypeFields(p)
+  setNodeSelect()
   await loadInfo()
 }
 
@@ -108,6 +109,22 @@ function toggleTypeFields(p) {
   $('strictField').classList.toggle('hidden', !isNext)
   const showSm = isNext && p.hasOmnife
   $('smField').classList.toggle('hidden', !showSm)
+}
+
+function setNodeSelect() {
+  const cfg = state.config || {}
+  const map = cfg.nodeVersions || {}
+  const v = map[state.selected.path] || cfg.defaultNodeVersion || '22'
+  const sel = $('nodeSelect')
+  let found = false
+  for (const o of sel.options) { if (o.value === v) { found = true; break } }
+  if (!found) {
+    const o = document.createElement('option')
+    o.value = v
+    o.textContent = v
+    sel.appendChild(o)
+  }
+  sel.value = v
 }
 
 async function loadInfo() {
@@ -376,7 +393,8 @@ function collectParams() {
     useExistingDev: $('uedCheck').checked,
     locales: state.selectedLocales,
     npm: $('npmCheck').checked,
-    strict: $('strictCheck').checked
+    strict: $('strictCheck').checked,
+    nodeVersion: $('nodeSelect').value
   }
 }
 
@@ -453,6 +471,12 @@ function bindStatic() {
   $('toMasterBtn').onclick = () => { if (state.info) doCheckout(state.info.defaultMaster) }
   $('pushDevBtn').onclick = doPushDev
   $('tagPushBtn').onclick = doTagPush
+  $('nodeSelect').onchange = async () => {
+    if (!state.selected) return
+    if (!state.config.nodeVersions) state.config.nodeVersions = {}
+    state.config.nodeVersions[state.selected.path] = $('nodeSelect').value
+    state.config = await appApi.setConfig(state.config)
+  }
   $('copyCmdBtn').onclick = () => appApi.copy($('cmdPreview').textContent)
   $('runBtn').onclick = doRun
 

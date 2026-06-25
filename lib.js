@@ -9,7 +9,9 @@ function defaultConfig() {
     projectsRoot: root,
     omniBuildPath: path.join(root, 'omni_build'),
     pythonPath: 'python',
-    shellPrelude: ''
+    shellPrelude: '',
+    defaultNodeVersion: '22',
+    nodeVersions: {}
   }
 }
 
@@ -22,12 +24,17 @@ function shellInvocation() {
 }
 
 const BOOT_BREW = '[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"; [ -x /usr/local/bin/brew ] && eval "$(/usr/local/bin/brew shellenv)"'
-const BOOT_PYENV_NVM = 'export PYENV_ROOT="$HOME/.pyenv"; [ -d "$PYENV_ROOT/bin" ] && export PATH="$PYENV_ROOT/bin:$PATH"; command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)" >/dev/null 2>&1; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" >/dev/null 2>&1; nvm use 22 >/dev/null 2>&1 || nvm use 20 >/dev/null 2>&1'
+const BOOT_PYENV = 'export PYENV_ROOT="$HOME/.pyenv"; [ -d "$PYENV_ROOT/bin" ] && export PATH="$PYENV_ROOT/bin:$PATH"; command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)" >/dev/null 2>&1'
+const BOOT_NVM = 'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" >/dev/null 2>&1'
 
-function withEnv(command, full) {
+function withEnv(command, full, nodeVersion) {
   if (process.platform === 'win32') return command
   let boot = BOOT_BREW
-  if (full) boot += '; ' + BOOT_PYENV_NVM
+  if (full) {
+    const v = String(nodeVersion || '22').replace(/[^0-9.]/g, '') || '22'
+    const useNode = 'nvm use ' + v + ' >/dev/null 2>&1 || nvm use 22 >/dev/null 2>&1 || nvm use 20 >/dev/null 2>&1'
+    boot += '; ' + BOOT_PYENV + '; ' + BOOT_NVM + '; ' + useNode
+  }
   return boot + '; ' + command
 }
 

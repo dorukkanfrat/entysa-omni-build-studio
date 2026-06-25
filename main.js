@@ -169,7 +169,8 @@ ipcMain.handle('build:run', (e, params) => {
     safeSend(e.sender, 'build:end', { code: -1 })
     return { started: false }
   }
-  return streamCommand(e.sender, lib.withEnv(built.command, true), built.cwd)
+  const nodeVersion = (params && params.nodeVersion) || cfg.defaultNodeVersion || '22'
+  return streamCommand(e.sender, lib.withEnv(built.command, true, nodeVersion), built.cwd)
 })
 
 ipcMain.handle('git:push-branch', (e, projectPath, branch) => {
